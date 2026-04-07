@@ -1045,9 +1045,10 @@ function renderTable() {
     dateEl.placeholder = "01-03-26";
     dateEl.style.minWidth = "0";
     dateEl.addEventListener("change", e => ur(r._id, "date", e.target.value));
+    dateEl.addEventListener("blur",   () => urBlur(r._id));
 
     const modeEl = select(PMODES, r.paymentMode);
-    modeEl.addEventListener("change", e => ur(r._id, "paymentMode", e.target.value));
+    modeEl.addEventListener("change", e => { ur(r._id, "paymentMode", e.target.value); urBlur(r._id); });
 
     const dateGrp = fieldGroup("Date", dateEl);
     dateGrp.style.flex = "0 0 130px";
@@ -1058,8 +1059,9 @@ function renderTable() {
     descEl.className = "field-textarea";
     descEl.placeholder = "What was this for?";
     descEl.value = r.description || "";
-    descEl.addEventListener("input", e => ur(r._id, "description", e.target.value));
+    descEl.addEventListener("input",  e => ur(r._id, "description", e.target.value));
     descEl.addEventListener("change", e => ur(r._id, "description", e.target.value));
+    descEl.addEventListener("blur",   () => urBlur(r._id));
     const descRow = document.createElement("div");
     descRow.className = "field-row single";
     descRow.appendChild(fieldGroup("Description", descEl));
@@ -1069,14 +1071,16 @@ function renderTable() {
     const incEl = input(r.income, "inc", "decimal");
     incEl.placeholder = "0";
     incEl.addEventListener("change", e => ur(r._id, "income", e.target.value));
+    incEl.addEventListener("blur",   () => urBlur(r._id));
     const expEl = input(r.expense, "exp", "decimal");
     expEl.placeholder = "0";
     expEl.addEventListener("change", e => ur(r._id, "expense", e.target.value));
+    expEl.addEventListener("blur",   () => urBlur(r._id));
     card.appendChild(fieldRow(fieldGroup("Income ₹", incEl), fieldGroup("Expense ₹", expEl)));
 
     // Row 4: Type of Expense
     const typeEl = select(ETYPES, r.typeOfExpense);
-    typeEl.addEventListener("change", e => ur(r._id, "typeOfExpense", e.target.value));
+    typeEl.addEventListener("change", e => { ur(r._id, "typeOfExpense", e.target.value); urBlur(r._id); });
     const typeRow = document.createElement("div");
     typeRow.className = "field-row single";
     typeRow.appendChild(fieldGroup("Type of Expense / Income", typeEl));
@@ -1086,6 +1090,7 @@ function renderTable() {
     const notesEl = input(r.notes);
     notesEl.placeholder = "Any extra remarks";
     notesEl.addEventListener("change", e => ur(r._id, "notes", e.target.value));
+    notesEl.addEventListener("blur",   () => urBlur(r._id));
     const notesRow = document.createElement("div");
     notesRow.className = "field-row single";
     notesRow.appendChild(fieldGroup("Notes (optional)", notesEl));
@@ -1149,16 +1154,25 @@ function updateSyncBar() {
 
 function x(v){ return String(v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
 
+// ur() — update row data locally only. Sheet save happens on blur.
 function ur(id, k, v) {
   const r = rows.find(r => r._id === id);
   if (!r) return;
   r[k] = v;
   calcSummary();
-  saveSession(); // persist locally immediately
-  // Debounce: wait 800ms after last change before saving to Sheets
-  setRowState(id, "pending");
+  saveSession();
+  // Mark dirty but DO NOT trigger a sheet save yet — wait for blur
+  if (rowState[id] === "saved") setRowState(id, "pending");
+}
+
+// urBlur() — called when user leaves a field (onblur). THIS triggers the sheet save.
+function urBlur(id) {
+  const r = rows.find(r => r._id === id);
+  if (!r) return;
+  if (rowState[id] === "saved") return; // nothing changed
+  // Debounce slightly to handle tab/focus transitions
   if (saveTimers[id]) clearTimeout(saveTimers[id]);
-  saveTimers[id] = setTimeout(() => saveRow(id), 800);
+  saveTimers[id] = setTimeout(() => saveRow(id), 300);
 }
 
 async function saveRow(id) {
@@ -1171,24 +1185,43 @@ async function saveRow(id) {
   if (!r) return;
 
   setRowState(id, "saving");
-
   const values = [[r.date, r.description, r.income, r.expense, r.paymentMode, r.typeOfExpense, r.notes]];
-  const range  = encodeURIComponent(cfg.sheetName + "!A1");
-  const url    = `https://sheets.googleapis.com/v4/spreadsheets/${cfg.sheetId}/values/${range}:append?valueInputOption=USER_ENTERED`;
 
   try {
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + accessToken },
-      body: JSON.stringify({ values })
-    });
-    let data;
-    try { data = await resp.json(); } catch(e) { throw new Error("HTTP " + resp.status); }
-    if (!resp.ok) throw new Error(data.error?.message || "Sheets error " + resp.status);
-    setRowState(id, "saved");
+    // If row already has a sheet row number — UPDATE that specific row
+    if (r._sheetRow) {
+      const range = encodeURIComponent(`${cfg.sheetName}!A${r._sheetRow}`);
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${cfg.sheetId}/values/${range}?valueInputOption=USER_ENTERED`;
+      const resp = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + accessToken },
+        body: JSON.stringify({ values })
+      });
+      let data;
+      try { data = await resp.json(); } catch(e) { throw new Error("HTTP " + resp.status); }
+      if (!resp.ok) throw new Error(data.error?.message || "Sheets error " + resp.status);
+      setRowState(id, "saved");
+    } else {
+      // First time saving this row — APPEND to get a new row
+      const range = encodeURIComponent(cfg.sheetName + "!A1");
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${cfg.sheetId}/values/${range}:append?valueInputOption=USER_ENTERED&includeValuesInResponse=true&insertDataOption=INSERT_ROWS`;
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + accessToken },
+        body: JSON.stringify({ values })
+      });
+      let data;
+      try { data = await resp.json(); } catch(e) { throw new Error("HTTP " + resp.status); }
+      if (!resp.ok) throw new Error(data.error?.message || "Sheets error " + resp.status);
+      // Extract the actual row number from the response so we can UPDATE later
+      const updatedRange = data.updates?.updatedRange || "";
+      const match = updatedRange.match(/!A(\d+)/);
+      if (match) r._sheetRow = parseInt(match[1]);
+      setRowState(id, "saved");
+    }
   } catch(err) {
     setRowState(id, "error");
-    showToast("Row save failed: " + err.message, "error", 5000);
+    showToast("Save failed: " + err.message, "error", 5000);
   }
 }
 
@@ -1237,11 +1270,13 @@ function calcSummary() {
 function fmt(n){ return n.toLocaleString("en-IN"); }
 
 // Auto-save ALL rows when table first renders after extraction
+// Stagger to avoid hitting Sheets API rate limits
 function autoSaveAllRows() {
   rows.forEach((r, i) => {
-    rowState[r._id] = "pending";
-    // Stagger saves 300ms apart to avoid rate limiting
-    saveTimers[r._id] = setTimeout(() => saveRow(r._id), 300 + i * 300);
+    if (!r._sheetRow) { // only append rows not yet in sheet
+      rowState[r._id] = "pending";
+      saveTimers[r._id] = setTimeout(() => saveRow(r._id), 500 + i * 600);
+    }
   });
   updateSyncBar();
 }
