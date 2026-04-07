@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#C4501A">
+<title>Cash Book Entry</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#FFF8F0;--surface:#fff;--surface2:#FFF3E4;
+  --primary:#C4501A;--primary-dark:#9A3A0E;--primary-glow:rgba(196,80,26,0.18);
+  --accent:#2B7A5F;--accent-bg:#E8F5F0;
+  --text:#1A1208;--text-mid:#5C4030;--text-soft:#9C7B5E;
+  --border:#EDD9C4;--danger:#C0392B;--danger-bg:#FFF0EF;
+  --radius:14px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,16px);
+}
+html,body{min-height:100%;background:var(--bg)}
+body{
+  font-family:'Sora',-apple-system,BlinkMacSystemFont,sans-serif;
+  color:var(--text);max-width:480px;margin:0 auto;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:calc(90px + var(--safe-bottom));
+}
+
+/* HEADER */
+.header{
+  background:var(--primary);color:white;
+  padding:calc(12px + var(--safe-top)) 16px 12px;
+  position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 16px rgba(150,50,10,0.3);
+}
+.header-row{display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:17px;font-weight:700}
+.header p{font-size:11px;opacity:0.75;margin-top:2px}
+.icon-btn{
+  background:rgba(255,255,255,0.18);border:none;color:white;
+  width:38px;height:38px;border-radius:10px;font-size:17px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .15s;flex-shrink:0
+}
+.icon-btn:active{background:rgba(255,255,255,0.35)}
+.header-right{display:flex;gap:8px;align-items:center}
+.user-badge{
+  font-size:11px;background:rgba(255,255,255,0.2);
+  border-radius:20px;padding:4px 10px;display:none;color:white
+}
+
+/* STEPS */
+.steps{display:flex;align-items:center;padding:16px 24px 6px}
+.step{display:flex;flex-direction:column;align-items:center}
+.step-dot{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;transition:all .3s
+}
+.s-done{background:var(--accent);color:white}
+.s-active{background:var(--primary);color:white;box-shadow:0 0 0 4px var(--primary-glow)}
+.s-idle{background:var(--border);color:var(--text-soft)}
+.step-lbl{font-size:9px;color:var(--text-soft);margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.step-line{flex:1;height:2px;background:var(--border);margin:0 6px 16px;transition:background .3s}
+.line-done{background:var(--accent)}
+
+/* CARD */
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:0 2px 12px rgba(180,100,30,.09);padding:18px 16px;margin:14px 14px 0}
+.card-title{font-size:11px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px}
+
+/* UPLOAD ZONE */
+.upload-zone{
+  border:2.5px dashed var(--border);border-radius:var(--radius);
+  background:var(--surface2);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:28px 20px;
+  cursor:pointer;transition:all .2s;gap:8px;text-align:center;
+  -webkit-user-select:none;user-select:none;margin-bottom:2px
+}
+.upload-zone:active{border-color:var(--primary);background:#FFE9D6}
+.uz-icon{font-size:38px}
+.upload-zone h3{font-size:15px;font-weight:600;color:var(--primary-dark)}
+.upload-zone p{font-size:12px;color:var(--text-soft)}
+.preview-img{width:100%;border-radius:10px;max-height:260px;object-fit:cover;border:2px solid var(--border);margin-bottom:12px;display:block}
+
+/* BUTTONS */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  border:none;border-radius:10px;font-family:'Sora',sans-serif;
+  font-weight:600;font-size:14px;padding:13px 18px;
+  cursor:pointer;transition:all .18s;width:100%;
+  -webkit-user-select:none;user-select:none;text-decoration:none
+}
+.btn-primary{background:var(--primary);color:white}
+.btn-primary:active{background:var(--primary-dark)}
+.btn-primary:disabled{background:#ccc;cursor:not-allowed}
+.btn-success{background:var(--accent);color:white}
+.btn-success:active{background:#1f5c46}
+.btn-success:disabled{background:#aaa;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--text-mid);border:1.5px solid var(--border)}
+.btn-ghost:active{background:var(--surface2)}
+.btn-google{background:white;color:#3c4043;border:1.5px solid #dadce0;font-size:14px;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.btn-google:active{background:#f8f9fa}
+.btn-sm{padding:7px 12px;font-size:12px;width:auto;border-radius:8px}
+.btn-danger-sm{background:var(--danger-bg);color:var(--danger);border:1px solid #fccdd0;padding:5px 10px;font-size:11px;width:auto;border-radius:7px;cursor:pointer;font-family:'Sora',sans-serif;font-weight:600}
+
+/* SPINNER */
+.spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* SUMMARY PILLS */
+.summary-row{display:flex;gap:10px;margin-bottom:12px}
+.pill{flex:1;border-radius:10px;padding:10px 12px;text-align:center}
+.pill-i{background:var(--accent-bg)}
+.pill-e{background:var(--danger-bg)}
+.pill .amt{font-size:15px;font-weight:700}
+.pill-i .amt{color:var(--accent)}
+.pill-e .amt{color:var(--danger)}
+.pill .lbl{font-size:9px;color:var(--text-soft);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.net-row{text-align:center;font-size:13px;font-weight:700;margin-bottom:14px}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px}
+table{width:100%;border-collapse:collapse;font-size:11px;min-width:580px}
+thead th{
+  background:var(--surface2);color:var(--text-mid);font-size:9px;
+  text-transform:uppercase;letter-spacing:.6px;padding:7px 5px;
+  text-align:left;white-space:nowrap;border-bottom:2px solid var(--border)
+}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:last-child{border-bottom:none}
+td{padding:4px 3px;vertical-align:middle}
+.rn{font-size:9px;color:var(--text-soft);text-align:center;width:18px}
+.ci{
+  width:100%;border:1.5px solid transparent;border-radius:6px;
+  padding:5px;font-family:'Sora',sans-serif;font-size:11px;
+  background:transparent;color:var(--text);transition:border-color .15s;
+  -webkit-appearance:none
+}
+.ci:focus{outline:none;border-color:var(--primary);background:#FFF5EC}
+.ci-inc{color:var(--accent);font-weight:600}
+.ci-exp{color:var(--danger);font-weight:600}
+select.ci{cursor:pointer}
+
+.add-row-btn{
+  display:flex;align-items:center;gap:6px;color:var(--primary);
+  font-size:12px;font-weight:600;cursor:pointer;padding:10px 4px 2px;
+  background:none;border:none;font-family:'Sora',sans-serif
+}
+
+/* BOTTOM BAR */
+.bottom-bar{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;background:var(--surface);
+  border-top:1px solid var(--border);padding:10px 14px;
+  padding-bottom:calc(10px + var(--safe-bottom));
+  display:flex;gap:10px;box-shadow:0 -4px 20px rgba(0,0,0,.08);z-index:40
+}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:calc(80px + var(--safe-bottom));left:50%;
+  transform:translateX(-50%);padding:11px 18px;border-radius:30px;
+  font-size:13px;font-weight:600;white-space:nowrap;z-index:100;
+  box-shadow:0 4px 20px rgba(0,0,0,.15);display:flex;align-items:center;gap:7px;
+  animation:toastIn .25s ease;pointer-events:none;max-width:90vw;white-space:normal;text-align:center
+}
+.toast-success{background:var(--accent);color:white}
+.toast-error{background:var(--danger);color:white}
+.toast-info{background:var(--text);color:white}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* SETTINGS SHEET */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-end}
+.sheet{
+  background:var(--surface);border-radius:20px 20px 0 0;
+  padding:20px 18px calc(20px + var(--safe-bottom));
+  width:100%;max-width:480px;margin:0 auto;
+  box-shadow:0 -8px 32px rgba(0,0,0,.15);
+  animation:sheetUp .28s ease;max-height:88vh;overflow-y:auto
+}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet h2{font-size:16px;font-weight:700;color:var(--primary-dark);margin-bottom:4px}
+.sheet-sub{font-size:12px;color:var(--text-soft);margin-bottom:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.field input{
+  width:100%;border:1.5px solid var(--border);border-radius:10px;
+  padding:11px 13px;font-family:'Sora',sans-serif;font-size:13px;
+  color:var(--text);background:var(--surface);transition:border-color .15s
+}
+.field input:focus{outline:none;border-color:var(--primary)}
+.hint{font-size:10px;color:var(--text-soft);margin-top:4px;line-height:1.5}
+.hint code{font-size:10px;background:#f5f5f5;padding:2px 4px;border-radius:4px}
+.sheet-divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+/* LOGIN / SETUP SCREENS */
+.center-screen{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:55vh;padding:40px 24px;text-align:center;gap:14px
+}
+.big-icon{font-size:60px}
+.center-screen h2{font-size:21px;font-weight:700}
+.center-screen p{font-size:13px;color:var(--text-soft);line-height:1.6;max-width:280px}
+
+/* SUCCESS */
+.success-box{background:var(--accent-bg);border-radius:12px;padding:14px 16px;text-align:left;margin-bottom:22px}
+.srow{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+.srow-total{display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:8px 0 0;margin-top:6px;border-top:1px solid var(--border)}
+
+/* EMPTY */
+
+/* ── CROP TOOL ── */
+#cropOverlay{
+  display:none;position:fixed;inset:0;background:#000;z-index:300;
+  flex-direction:column;align-items:center;justify-content:center;
+}
+#cropOverlay.active{display:flex;}
+.crop-header{
+  width:100%;padding:14px 16px calc(14px + var(--safe-top));
+  background:rgba(0,0,0,0.7);display:flex;align-items:center;
+  justify-content:space-between;position:absolute;top:0;left:0;
+}
+.crop-header h3{color:white;font-size:15px;font-weight:600;}
+.crop-header p{color:rgba(255,255,255,0.6);font-size:11px;margin-top:2px;}
+.crop-footer{
+  width:100%;padding:14px 16px calc(14px + var(--safe-bottom));
+  background:rgba(0,0,0,0.7);display:flex;gap:10px;
+  position:absolute;bottom:0;left:0;
+}
+#cropCanvas{
+  touch-action:none;cursor:crosshair;
+  max-width:100vw;max-height:100vh;
+}
+.crop-btn-cancel{background:rgba(255,255,255,0.15);color:white;border:none;border-radius:10px;padding:12px 20px;font-family:"Sora",sans-serif;font-size:14px;font-weight:600;cursor:pointer;flex:1;}
+.crop-btn-confirm{background:var(--accent);color:white;border:none;border-radius:10px;padding:12px 20px;font-family:"Sora",sans-serif;font-size:14px;font-weight:600;cursor:pointer;flex:2;}
+
+.empty{text-align:center;padding:28px;color:var(--text-soft);font-size:13px}
+.saving-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--primary);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ── ROW CARDS ── */
+.row-card{
+  background:var(--surface);border-radius:var(--radius);
+  box-shadow:0 2px 10px rgba(180,100,30,.08);
+  margin:10px 14px 0;padding:14px 14px 10px;
+  border-left:4px solid var(--border);transition:border-color .3s;
+}
+.row-card.state-saved  { border-left-color:var(--accent); }
+.row-card.state-saving { border-left-color:var(--primary); }
+.row-card.state-error  { border-left-color:var(--danger); }
+.row-card.state-pending{ border-left-color:var(--border); }
+
+.row-card-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;
+}
+.row-num-badge{
+  background:var(--primary);color:white;border-radius:20px;
+  font-size:11px;font-weight:700;padding:3px 10px;
+}
+.row-save-status{ font-size:13px; }
+.row-card-actions{ display:flex;gap:6px;align-items:center; }
+
+.field-row{ display:flex;gap:8px;margin-bottom:8px; }
+.field-row.single{ flex-direction:column; }
+.field-group{ flex:1;min-width:0; }
+.field-group label{
+  display:block;font-size:9px;font-weight:700;color:var(--text-soft);
+  text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;
+}
+.field-input{
+  width:100%;border:1.5px solid var(--border);border-radius:8px;
+  padding:9px 10px;font-family:'Sora',sans-serif;font-size:14px;
+  color:var(--text);background:var(--surface);transition:border-color .15s;
+  -webkit-appearance:none;
+}
+.field-input:focus{ outline:none;border-color:var(--primary);background:#FFF8F2; }
+.field-input.inc{ color:var(--accent);font-weight:600; }
+.field-input.exp{ color:var(--danger);font-weight:600; }
+.field-textarea{
+  width:100%;border:1.5px solid var(--border);border-radius:8px;
+  padding:9px 10px;font-family:'Sora',sans-serif;font-size:14px;
+  color:var(--text);background:var(--surface);resize:vertical;
+  min-height:64px;transition:border-color .15s;
+}
+.field-textarea:focus{ outline:none;border-color:var(--primary);background:#FFF8F2; }
+.add-below-btn{
+  width:100%;margin-top:8px;padding:7px;border-radius:8px;
+  border:1.5px dashed var(--border);background:transparent;
+  color:var(--text-soft);font-size:12px;font-weight:600;
+  font-family:'Sora',sans-serif;cursor:pointer;
+  transition:all .15s;
+}
+.add-below-btn:active{ border-color:var(--primary);color:var(--primary); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-row">
+    <div>
+      <h1>📒 Cash Book Entry</h1>
+      <p id="headerSub">Plywood Factory · Daily Ledger</p>
+    </div>
+    <div class="header-right">
+      <span class="user-badge" id="userBadge">✓ Connected</span>
+      <button class="icon-btn" onclick="openSettings()">⚙️</button>
+    </div>
+  </div>
+</div>
+
+<!-- STEPS -->
+<div class="steps" id="stepsBar" style="display:none">
+  <div class="step">
+    <div class="step-dot s-active" id="dot0">1</div>
+    <div class="step-lbl">Photo</div>
+  </div>
+  <div class="step-line" id="line0"></div>
+  <div class="step">
+    <div class="step-dot s-idle" id="dot1">2</div>
+    <div class="step-lbl">Review</div>
+  </div>
+  <div class="step-line" id="line1"></div>
+  <div class="step">
+    <div class="step-dot s-idle" id="dot2">3</div>
+    <div class="step-lbl">Saved</div>
+  </div>
+</div>
+
+<!-- SCREEN: NOT CONFIGURED -->
+<div id="screenSetup" style="display:none">
+  <div class="center-screen">
+    <div class="big-icon">⚙️</div>
+    <h2>Quick Setup</h2>
+    <p>Tap the gear icon to enter your Google Sheet ID and tab name to get started.</p>
+    <button class="btn btn-primary" onclick="openSettings()" style="max-width:220px">Open Settings</button>
+  </div>
+</div>
+
+<!-- SCREEN: LOGIN -->
+<div id="screenLogin" style="display:none">
+  <div class="center-screen">
+    <div class="big-icon">📒</div>
+    <h2>Sign in to Continue</h2>
+    <p>Connect with Google to start saving entries to the plywood factory ledger.</p>
+    <button class="btn btn-google" id="googleSignInBtn" onclick="startGoogleLogin()" style="max-width:260px">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Sign in with Google
+    </button>
+    <p style="font-size:11px;color:var(--text-soft);margin-top:-4px">You only need to do this once.</p>
+  </div>
+</div>
+
+<!-- SCREEN: STEP 0 — UPLOAD -->
+<div id="screen0" style="display:none">
+  <div class="card">
+    <div class="card-title">📷 Take / Upload Photo</div>
+
+    <div id="uploadZone">
+      <div class="upload-zone" onclick="document.getElementById('camInput').click()">
+        <div class="uz-icon">📸</div>
+        <h3>Open Camera</h3>
+        <p>Point at the cash book page</p>
+      </div>
+      <!-- Two separate inputs: camera capture and gallery -->
+      <input type="file" id="camInput" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
+
+      <div style="text-align:center;color:var(--text-soft);font-size:12px;padding:10px 0">— or —</div>
+
+      <div class="upload-zone" onclick="document.getElementById('galInput').click()">
+        <div class="uz-icon">🖼️</div>
+        <h3>Choose from Gallery</h3>
+        <p>Pick an existing photo</p>
+      </div>
+      <input type="file" id="galInput" accept="image/*" style="display:none" onchange="handleFile(this)">
+    </div>
+
+    <div id="previewZone" style="display:none">
+      <img id="previewImg" class="preview-img" alt="Preview">
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn btn-ghost btn-sm" onclick="resetPhoto()">🔄 Retake</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('camInput').click()">📸 Camera</button>
+      </div>
+      <button class="btn btn-primary" id="extractBtn" onclick="extractEntries()">
+        🔍 Extract Entries with AI
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: STEP 1 — REVIEW -->
+<div id="screen1" style="display:none">
+  <!-- Summary bar -->
+  <div class="card" style="padding:14px 16px;margin-bottom:0">
+    <div class="summary-row" style="margin-bottom:8px">
+      <div class="pill pill-i"><div class="amt" id="totalInc">₹0</div><div class="lbl">Income</div></div>
+      <div class="pill pill-e"><div class="amt" id="totalExp">₹0</div><div class="lbl">Expense</div></div>
+    </div>
+    <div class="net-row" id="netRow" style="margin-bottom:0">Net: ₹0</div>
+  </div>
+
+  <!-- Row cards rendered here by JS -->
+  <div id="rowCards" style="margin-top:0"></div>
+
+  <!-- Add row at bottom too -->
+  <div style="margin:8px 14px 0">
+    <button class="btn btn-ghost" onclick="addRow()" style="font-size:13px;gap:6px">
+      ＋ Add New Row
+    </button>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn btn-ghost" style="flex:0 0 auto;width:auto;padding:12px 16px" onclick="goToStep(0)">← Back</button>
+    <div id="syncStatus" style="flex:1;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:600">
+      <span id="syncIcon">✅</span>
+      <span id="syncMsg">All rows saved</span>
+    </div>
+    <button class="btn btn-ghost" id="doneBtn" onclick="goToStep(0)" style="flex:0 0 auto;width:auto;padding:12px 16px">Done ✓</button>
+  </div>
+</div>
+
+<!-- SCREEN: STEP 2 — SUCCESS (kept for compatibility, not used in auto-save flow) -->
+<div id="screen2" style="display:none">
+  <div class="card" style="text-align:center;padding:36px 20px">
+    <div style="font-size:60px;margin-bottom:14px">✅</div>
+    <h2 style="font-size:20px;font-weight:700;color:var(--accent);margin-bottom:8px">All Done!</h2>
+    <p style="font-size:13px;color:var(--text-soft);margin-bottom:20px" id="savedCount"></p>
+    <div class="success-box" id="finalSummary"></div>
+    <button class="btn btn-primary" onclick="goToStep(0)">📷 Enter Next Page</button>
+  </div>
+</div>
+
+<!-- SETTINGS SHEET -->
+<div class="overlay" id="settingsOverlay" style="display:none" onclick="if(event.target===this)closeSettings()">
+  <div class="sheet">
+    <h2>⚙️ Settings</h2>
+    <p class="sheet-sub">Google Sheet connection</p>
+
+    <div class="field">
+      <label>Anthropic API Key</label>
+      <input type="password" id="cfgApiKey" placeholder="sk-ant-api03-..." autocomplete="off" autocorrect="off" spellcheck="false">
+      <div class="hint">Get your key from <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--primary)">console.anthropic.com</a> — starts with <code>sk-ant-</code></div>
+    </div>
+
+    <hr class="sheet-divider">
+
+    <div class="field">
+      <label>Google Sheet ID</label>
+      <input type="text" id="cfgSheetId" placeholder="Paste your Sheet ID here" autocomplete="off" autocorrect="off" spellcheck="false">
+      <div class="hint">From the Sheet URL:<br>…/spreadsheets/d/<strong>THIS_PART</strong>/edit</div>
+    </div>
+
+    <div class="field">
+      <label>Sheet Tab Name</label>
+      <input type="text" id="cfgSheetName" placeholder="Sheet1" autocorrect="off">
+      <div class="hint">The tab name at the bottom of your Google Sheet (e.g. <code>Sheet1</code>)</div>
+    </div>
+
+    <hr class="sheet-divider">
+
+    <div style="font-size:10px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Google Account</div>
+    <div id="authStatus" style="margin-bottom:14px"></div>
+
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeSettings()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast" style="display:none"></div>
+
+<!-- CROP OVERLAY -->
+<div id="cropOverlay">
+  <div class="crop-header">
+    <div>
+      <h3>✂️ Crop Image</h3>
+      <p>Drag the corners to select just the cash book page</p>
+    </div>
+  </div>
+  <canvas id="cropCanvas"></canvas>
+  <div class="crop-footer">
+    <button class="crop-btn-cancel" onclick="cancelCrop()">Cancel</button>
+    <button class="crop-btn-confirm" onclick="confirmCrop()">✓ Use This Crop</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════
+const CLIENT_ID = "373822046450-5vsb3bqkhc0kkelukloi5nuds0ife3u4.apps.googleusercontent.com";
+const SCOPES    = "https://www.googleapis.com/auth/spreadsheets";
+const PMODES    = ["Cash","UPI","Cheque","Bank Transfer","?"];
+const ETYPES    = ["","Labour","Salary","Transport","Core Drying","GST Tax","Loan Repayment","Factory Expenses","Personal Expenses","Rental Income","Sales - Glue","Sales - Plywood","Sales - Veneer","Sales Tax","Savings","Savings Matured","Raw Material Supplier","Glue Supplier","Core Supplier","Misc"];
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let cfg         = JSON.parse(localStorage.getItem("cb_cfg")    || "{}");
+let accessToken = localStorage.getItem("cb_token")             || "";
+let tokenExpiry = parseInt(localStorage.getItem("cb_expiry")   || "0");
+let toastTmr    = null;
+
+// ── Session persistence — restored on every page load ──
+function loadSession() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("cb_session") || "{}");
+    // If saved rows exist but step is 0, push to step 1
+    const restoredStep = (saved.rows && saved.rows.length > 0)
+      ? Math.max(saved.step || 0, 1)
+      : (saved.step || 0);
+    return {
+      rows:     saved.rows     || [],
+      imgBase64:"",              // never restore image — too large for Android
+      imgType:  saved.imgType  || "image/jpeg",
+      step:     restoredStep,
+      rowState: saved.rowState || {},
+      savedAt:  saved.savedAt  || 0,
+    };
+  } catch(e) { return {rows:[],imgBase64:"",imgType:"image/jpeg",step:0,rowState:{},savedAt:0}; }
+}
+
+function saveSession() {
+  // NOTE: We never store imgBase64 — it is too large for Android Chrome
+  // localStorage and causes quota errors. The image is only needed before
+  // extraction. Once rows exist, we jump straight to step 1 on resume.
+  try {
+    // If we have rows, force step to 1 so we resume at review screen
+    const saveStep = (rows.length > 0) ? 1 : step;
+    localStorage.setItem("cb_session", JSON.stringify({
+      rows, imgType, step: saveStep, rowState, savedAt: Date.now()
+    }));
+  } catch(e) {
+    // If even that fails (very low storage), save just the rows
+    try {
+      const saveStep = (rows.length > 0) ? 1 : step;
+      localStorage.setItem("cb_session", JSON.stringify({
+        rows:rows.map(r=>({...r})), imgType:"image/jpeg",
+        step: saveStep, rowState:{}, savedAt: Date.now()
+      }));
+    } catch(e2) { console.warn("Session save failed:", e2); }
+  }
+}
+
+function clearSession() {
+  localStorage.removeItem("cb_session");
+}
+
+const _s    = loadSession();
+let rows     = _s.rows;
+let imgBase64= _s.imgBase64;
+let imgType  = _s.imgType;
+let step     = _s.step;
+let rowState = _s.rowState;
+
+// ═══════════════════════════════════════════
+//  BOOT — handle OAuth redirect
+// ═══════════════════════════════════════════
+window.addEventListener("load", () => {
+  if (location.hash && location.hash.includes("access_token")) {
+    const p = new URLSearchParams(location.hash.replace(/^#/,""));
+    const tok = p.get("access_token");
+    const exp = parseInt(p.get("expires_in") || "3600");
+    if (tok) {
+      accessToken = tok;
+      tokenExpiry = Date.now() + exp * 1000;
+      localStorage.setItem("cb_token",  tok);
+      localStorage.setItem("cb_expiry", tokenExpiry);
+      history.replaceState(null, "", location.pathname);
+      showToast("Signed in with Google ✓", "success");
+    }
+  }
+
+  // Resume session if rows exist — jump straight to review screen
+  if (rows.length > 0 && step === 1) {
+    // Re-mark any previously "saving" rows as pending so they retry
+    rows.forEach(r => {
+      if (rowState[r._id] === "saving") rowState[r._id] = "pending";
+    });
+    render();
+    // Show resume banner with time info
+    const _s2 = JSON.parse(localStorage.getItem("cb_session") || "{}");
+    const ago = _s2.savedAt ? Math.round((Date.now() - _s2.savedAt) / 60000) : 0;
+    const agoStr = ago < 1 ? "just now" : ago + " min ago";
+    showToast("Resumed " + rows.length + " rows (saved " + agoStr + ")", "info", 5000);
+    // Retry any unsaved rows automatically
+    setTimeout(() => {
+      rows.forEach((r, i) => {
+        if (rowState[r._id] !== "saved") {
+          setTimeout(() => saveRow(r._id), i * 400);
+        }
+      });
+    }, 1000);
+    return;
+  }
+
+  render();
+});
+
+// ═══════════════════════════════════════════
+//  RENDER / ROUTER
+// ═══════════════════════════════════════════
+function render() {
+  const ok     = cfg.sheetId && cfg.sheetName;
+  const authed = isTokenValid();
+
+  ["screenSetup","screenLogin","screen0","screen1","screen2","stepsBar"]
+    .forEach(id => hide(id));
+
+  const badge = document.getElementById("userBadge");
+  badge.style.display = authed ? "block" : "none";
+
+  if (!ok)     { show("screenSetup"); return; }
+  if (!authed) { show("screenLogin"); return; }
+
+  show("stepsBar");
+  updateDots();
+  if (step === 0) show("screen0");
+  if (step === 1) { show("screen1"); renderTable(); }
+  if (step === 2) show("screen2");
+}
+
+function goToStep(n) {
+  step = n;
+  if (n === 0) { rows = []; imgBase64 = ""; rowState = {}; saveTimers = {}; clearSession(); resetPhotoUI(); }
+  else { saveSession(); }
+  render();
+}
+
+function updateDots() {
+  for (let i = 0; i < 3; i++) {
+    const d = document.getElementById("dot"+i);
+    d.className = "step-dot " + (i < step ? "s-done" : i === step ? "s-active" : "s-idle");
+    d.textContent = i < step ? "✓" : i + 1;
+  }
+  for (let i = 0; i < 2; i++) {
+    const l = document.getElementById("line"+i);
+    l.className = "step-line" + (i < step ? " line-done" : "");
+  }
+}
+
+// ═══════════════════════════════════════════
+//  GOOGLE OAUTH — implicit flow
+// ═══════════════════════════════════════════
+function isTokenValid() {
+  return !!(accessToken && Date.now() < tokenExpiry - 60000);
+}
+
+function startGoogleLogin() {
+  const redirect = location.origin + location.pathname;
+  const url = "https://accounts.google.com/o/oauth2/v2/auth?" + new URLSearchParams({
+    client_id:     CLIENT_ID,
+    redirect_uri:  redirect,
+    response_type: "token",
+    scope:         SCOPES,
+    prompt:        "select_account"
+  });
+  location.href = url;
+}
+
+function signOut() {
+  accessToken = ""; tokenExpiry = 0;
+  localStorage.removeItem("cb_token");
+  localStorage.removeItem("cb_expiry");
+  step = 0; rows = [];
+  closeSettings();
+  render();
+  showToast("Signed out", "info");
+}
+
+// ═══════════════════════════════════════════
+//  IMAGE HANDLING + CROP
+// ═══════════════════════════════════════════
+
+let cropImg      = null;   // original full Image object
+let cropFullSrc  = "";     // original data URL before crop
+// Crop selection in IMAGE coordinates
+let cropX=0, cropY=0, cropW=0, cropH=0;
+// Canvas display scale
+let cropScale    = 1;
+// Drag handle state
+let dragHandle   = null;   // null | 'tl'|'tr'|'bl'|'br'|'move'
+let dragStart    = {x:0,y:0};
+let dragOrigCrop = {x:0,y:0,w:0,h:0};
+const HANDLE_R   = 22;     // px on screen
+
+function handleFile(input) {
+  const file = input && input.files && input.files[0];
+  if (!file) return;
+  imgType = "image/jpeg";
+  const reader = new FileReader();
+  reader.onload = e => {
+    cropFullSrc = e.target.result;
+    const img = new Image();
+    img.onload = () => {
+      cropImg = img;
+      openCrop();
+    };
+    img.src = cropFullSrc;
+  };
+  reader.readAsDataURL(file);
+  input.value = "";
+}
+
+// ── Open crop tool ────────────────────────────────────────────────────────────
+function openCrop() {
+  const overlay = document.getElementById("cropOverlay");
+  const canvas  = document.getElementById("cropCanvas");
+  overlay.classList.add("active");
+
+  // Size canvas to fit screen (leave room for header/footer ~120px each)
+  const maxW = window.innerWidth;
+  const maxH = window.innerHeight - 260;
+  cropScale  = Math.min(maxW / cropImg.width, maxH / cropImg.height, 1);
+  canvas.width  = Math.round(cropImg.width  * cropScale);
+  canvas.height = Math.round(cropImg.height * cropScale);
+
+  // Default crop = full image with 5% inset
+  const inX = cropImg.width  * 0.05;
+  const inY = cropImg.height * 0.05;
+  cropX = inX; cropY = inY;
+  cropW = cropImg.width  - inX * 2;
+  cropH = cropImg.height - inY * 2;
+
+  drawCrop();
+  attachCropEvents(canvas);
+}
+
+function drawCrop() {
+  const canvas = document.getElementById("cropCanvas");
+  if (!canvas || !cropImg) return;
+  const ctx = canvas.getContext("2d");
+  const cw = canvas.width, ch = canvas.height;
+
+  // Draw image
+  ctx.clearRect(0, 0, cw, ch);
+  ctx.drawImage(cropImg, 0, 0, cw, ch);
+
+  // Dim outside crop
+  const sx = cropX * cropScale, sy = cropY * cropScale;
+  const sw = cropW * cropScale, sh = cropH * cropScale;
+  ctx.fillStyle = "rgba(0,0,0,0.52)";
+  ctx.fillRect(0,   0,  cw,       sy);           // top
+  ctx.fillRect(0,   sy, sx,       sh);           // left
+  ctx.fillRect(sx+sw, sy, cw-sx-sw, sh);         // right
+  ctx.fillRect(0,   sy+sh, cw,    ch-sy-sh);     // bottom
+
+  // Crop border
+  ctx.strokeStyle = "#FFFFFF";
+  ctx.lineWidth   = 2;
+  ctx.strokeRect(sx, sy, sw, sh);
+
+  // Grid lines (rule of thirds)
+  ctx.strokeStyle = "rgba(255,255,255,0.3)";
+  ctx.lineWidth   = 1;
+  for (let i=1; i<3; i++) {
+    ctx.beginPath(); ctx.moveTo(sx + sw*i/3, sy); ctx.lineTo(sx + sw*i/3, sy+sh); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sx, sy + sh*i/3); ctx.lineTo(sx+sw, sy + sh*i/3); ctx.stroke();
+  }
+
+  // Corner handles
+  const handles = corners();
+  handles.forEach(h => {
+    ctx.fillStyle   = "#FFFFFF";
+    ctx.strokeStyle = "var(--primary, #C4501A)";
+    ctx.lineWidth   = 2.5;
+    ctx.beginPath();
+    ctx.arc(h.sx, h.sy, HANDLE_R * 0.7, 0, Math.PI*2);
+    ctx.fill(); ctx.stroke();
+  });
+}
+
+function corners() {
+  const sx = cropX*cropScale, sy = cropY*cropScale;
+  const sw = cropW*cropScale, sh = cropH*cropScale;
+  return [
+    {id:"tl", sx:sx,    sy:sy   },
+    {id:"tr", sx:sx+sw, sy:sy   },
+    {id:"bl", sx:sx,    sy:sy+sh},
+    {id:"br", sx:sx+sw, sy:sy+sh},
+  ];
+}
+
+function hitHandle(px, py) {
+  for (const h of corners()) {
+    const dx = px - h.sx, dy = py - h.sy;
+    if (Math.sqrt(dx*dx+dy*dy) < HANDLE_R * 1.4) return h.id;
+  }
+  // Check inside crop box for move
+  const sx=cropX*cropScale, sy=cropY*cropScale, sw=cropW*cropScale, sh=cropH*cropScale;
+  if (px>sx && px<sx+sw && py>sy && py<sy+sh) return "move";
+  return null;
+}
+
+function canvasPoint(canvas, e) {
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches ? e.touches[0] : e;
+  return {
+    x: (touch.clientX - rect.left) * (canvas.width  / rect.width),
+    y: (touch.clientY - rect.top)  * (canvas.height / rect.height)
+  };
+}
+
+function attachCropEvents(canvas) {
+  // Remove old listeners by replacing canvas clone
+  const fresh = canvas.cloneNode(true);
+  canvas.parentNode.replaceChild(fresh, canvas);
+  const c = document.getElementById("cropCanvas");
+
+  const onStart = e => {
+    e.preventDefault();
+    const p = canvasPoint(c, e);
+    dragHandle   = hitHandle(p.x, p.y);
+    dragStart    = p;
+    dragOrigCrop = {x:cropX, y:cropY, w:cropW, h:cropH};
+  };
+  const onMove = e => {
+    e.preventDefault();
+    if (!dragHandle) return;
+    const p  = canvasPoint(c, e);
+    const dx = (p.x - dragStart.x) / cropScale;
+    const dy = (p.y - dragStart.y) / cropScale;
+    const iw = cropImg.width, ih = cropImg.height;
+    const MIN = 60;
+    let {x,y,w,h} = dragOrigCrop;
+    if (dragHandle==="move") {
+      x = Math.max(0, Math.min(iw-w, x+dx));
+      y = Math.max(0, Math.min(ih-h, y+dy));
+    } else {
+      if (dragHandle==="tl") { x=Math.min(x+w-MIN,x+dx); y=Math.min(y+h-MIN,y+dy); w=dragOrigCrop.w-dx; h=dragOrigCrop.h-dy; }
+      if (dragHandle==="tr") { w=Math.max(MIN,dragOrigCrop.w+dx); y=Math.min(y+h-MIN,y+dy); h=dragOrigCrop.h-dy; }
+      if (dragHandle==="bl") { x=Math.min(x+w-MIN,x+dx); w=dragOrigCrop.w-dx; h=Math.max(MIN,dragOrigCrop.h+dy); }
+      if (dragHandle==="br") { w=Math.max(MIN,dragOrigCrop.w+dx); h=Math.max(MIN,dragOrigCrop.h+dy); }
+      // Clamp to image bounds
+      if (x<0){w+=x;x=0;} if (y<0){h+=y;y=0;}
+      if (x+w>iw) w=iw-x; if (y+h>ih) h=ih-y;
+      w=Math.max(MIN,w); h=Math.max(MIN,h);
+    }
+    cropX=x; cropY=y; cropW=w; cropH=h;
+    drawCrop();
+  };
+  const onEnd = e => { e.preventDefault(); dragHandle = null; };
+
+  c.addEventListener("touchstart", onStart, {passive:false});
+  c.addEventListener("touchmove",  onMove,  {passive:false});
+  c.addEventListener("touchend",   onEnd,   {passive:false});
+  c.addEventListener("mousedown",  onStart);
+  c.addEventListener("mousemove",  onMove);
+  c.addEventListener("mouseup",    onEnd);
+  drawCrop();
+}
+
+function cancelCrop() {
+  document.getElementById("cropOverlay").classList.remove("active");
+  resetPhotoUI();
+}
+
+function confirmCrop() {
+  // Render the cropped region at max 1600px
+  const MAX = 1600;
+  let cw = Math.round(cropW), ch = Math.round(cropH);
+  if (cw > MAX || ch > MAX) {
+    if (cw > ch) { ch = Math.round(ch * MAX / cw); cw = MAX; }
+    else          { cw = Math.round(cw * MAX / ch); ch = MAX; }
+  }
+  const out = document.createElement("canvas");
+  out.width = cw; out.height = ch;
+  out.getContext("2d").drawImage(
+    cropImg,
+    Math.round(cropX), Math.round(cropY), Math.round(cropW), Math.round(cropH),
+    0, 0, cw, ch
+  );
+  const compressed = out.toDataURL("image/jpeg", 0.85);
+  imgBase64 = compressed.split(",")[1];
+  document.getElementById("previewImg").src = compressed;
+  document.getElementById("cropOverlay").classList.remove("active");
+  hide("uploadZone");
+  show("previewZone");
+  // Note: we don't save image to session (too large for Android)
+}
+
+function resetPhoto()  { imgBase64 = ""; cropImg = null; resetPhotoUI(); }
+function resetPhotoUI(){ hide("previewZone"); show("uploadZone"); document.getElementById("previewImg").src = ""; }
+
+// ═══════════════════════════════════════════
+//  CLAUDE OCR
+// ═══════════════════════════════════════════
+async function extractEntries() {
+  if (!imgBase64) return;
+  if (!cfg.anthropicKey) { showToast('Please add your Anthropic API key in ⚙️ Settings', 'error'); return; }
+  const btn = document.getElementById("extractBtn");
+  setLoading(btn, "Reading handwriting…");
+
+  const prompt = [
+    "This is a handwritten cash book / day book page from a plywood factory.",
+    "Extract every row as a JSON array. Each object must have EXACTLY these keys:",
+    "date, description, income, expense, paymentMode, typeOfExpense, notes",
+    "",
+    "Rules:",
+    "- income / expense: numeric string, no ₹ or commas. Empty string if absent.",
+    "- paymentMode: Cash | UPI | Cheque | Bank Transfer | ?",
+    "- typeOfExpense: Pick the best match from: Labour, Salary, Transport, Core Drying, GST Tax, Loan Repayment, Factory Expenses, Personal Expenses, Rental Income, Sales - Glue, Sales - Plywood, Sales - Veneer, Sales Tax, Savings, Savings Matured, Raw Material Supplier, Glue Supplier, Core Supplier, Misc. Rules: wages/workers/OT/driver=Labour; owner/personal=Personal Expenses; KEB/electricity=Factory Expenses; glue purchase=Glue Supplier; core purchase=Core Supplier; raw boards=Raw Material Supplier; van/vehicle=Transport; salary advance=Salary; GST=GST Tax; loan=Loan Repayment; plywood sold=Sales - Plywood; veneer sold=Sales - Veneer; glue sold=Sales - Glue; rent=Rental Income; savings deposit=Savings; savings matured=Savings Matured; else=Misc. Empty string only for unclassified income.",
+    "- date: as written on the page. Empty string if not on that row.",
+    "- notes: any extra remarks. Empty string if none.",
+    "",
+    "Reply ONLY with the JSON array. Start with [ end with ]. No markdown, no explanation."
+  ].join("\n");
+
+  try {
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type":  "application/json",
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+        "x-api-key": cfg.anthropicKey || ""
+      },
+      body: JSON.stringify({
+        model:      "claude-sonnet-4-20250514",
+        max_tokens: 2048,
+        messages: [{
+          role: "user",
+          content: [
+            { type: "image",  source: { type: "base64", media_type: imgType, data: imgBase64 } },
+            { type: "text",   text: prompt }
+          ]
+        }]
+      })
+    });
+
+    let data;
+    try { data = await resp.json(); } catch(e) { throw new Error("HTTP " + resp.status + " — bad response"); }
+    if (!resp.ok || data.error) throw new Error("API " + resp.status + ": " + (data.error?.message || JSON.stringify(data).slice(0,120)));
+
+    const raw = (data.content || []).filter(b => b.type==="text").map(b => b.text).join("");
+    if (!raw) throw new Error("Empty AI response — please retry.");
+
+    let clean = raw.replace(/```json/gi,"").replace(/```/g,"").trim();
+    const si = clean.indexOf("["), ei = clean.lastIndexOf("]");
+    if (si === -1 || ei === -1) throw new Error("AI response: " + raw.slice(0,120));
+    clean = clean.slice(si, ei+1);
+
+    let parsed;
+    try { parsed = JSON.parse(clean); } catch(e) { throw new Error("Parse error: " + e.message + " | " + clean.slice(0,80)); }
+
+    rows = parsed.map(r => ({ ...r, _id: uid() }));
+    rowState = {}; saveTimers = {};
+    step = 1;
+    saveSession();
+    render();
+    // Auto-save all rows immediately after AI extracts them
+    setTimeout(() => autoSaveAllRows(), 400);
+
+  } catch(err) {
+    showToast(err.message, "error", 7000);
+  } finally {
+    clearLoading(btn, "🔍 Extract Entries with AI");
+  }
+}
+
+// ═══════════════════════════════════════════
+//  TABLE + AUTO-SAVE PER ROW
+// ═══════════════════════════════════════════
+
+// Track save state per row: 'pending' | 'saving' | 'saved' | 'error'
+// rowState is declared above in session persistence block
+let saveTimers  = {};   // _id -> debounce timer
+
+function renderTable() {
+  const container = document.getElementById("rowCards");
+  container.innerHTML = "";
+  if (!rows.length) {
+    container.innerHTML = `<div class="empty">No rows yet — tap "+ Add New Row" below.</div>`;
+    updateSyncBar();
+    return;
+  }
+  rows.forEach((r, i) => {
+    if (!rowState[r._id]) rowState[r._id] = "pending";
+    const card = document.createElement("div");
+    card.className = "row-card state-" + (rowState[r._id] || "pending");
+    card.id = "card-" + r._id;
+
+    // Header
+    const header = document.createElement("div");
+    header.className = "row-card-header";
+    header.innerHTML = `<span class="row-num-badge">Row ${i+1}</span>`;
+    const actions = document.createElement("div");
+    actions.className = "row-card-actions";
+    const statusSpan = document.createElement("span");
+    statusSpan.className = "row-save-status";
+    statusSpan.id = "rs-" + r._id;
+    statusSpan.innerHTML = statusIcon(r._id);
+    const delBtn = document.createElement("button");
+    delBtn.className = "btn-danger-sm";
+    delBtn.textContent = "✕ Delete";
+    delBtn.addEventListener("click", () => delRow(r._id));
+    actions.appendChild(statusSpan);
+    actions.appendChild(delBtn);
+    header.appendChild(actions);
+    card.appendChild(header);
+
+    // Helper to make a field group
+    function fieldGroup(labelText, el) {
+      const g = document.createElement("div");
+      g.className = "field-group";
+      const lbl = document.createElement("label");
+      lbl.textContent = labelText;
+      g.appendChild(lbl);
+      g.appendChild(el);
+      return g;
+    }
+    function fieldRow(...groups) {
+      const row = document.createElement("div");
+      row.className = "field-row";
+      groups.forEach(g => row.appendChild(g));
+      return row;
+    }
+    function input(val, cls, mode) {
+      const el = document.createElement("input");
+      el.className = "field-input" + (cls ? " " + cls : "");
+      el.value = val || "";
+      if (mode) el.inputMode = mode;
+      return el;
+    }
+    function select(options, val) {
+      const el = document.createElement("select");
+      el.className = "field-input";
+      options.forEach(o => {
+        const opt = document.createElement("option");
+        opt.value = o;
+        opt.textContent = o || "— Select type —";
+        if (o === val) opt.selected = true;
+        el.appendChild(opt);
+      });
+      return el;
+    }
+
+    // Row 1: Date + Payment Mode
+    const dateEl = input(r.date);
+    dateEl.placeholder = "01-03-26";
+    dateEl.style.minWidth = "0";
+    dateEl.addEventListener("change", e => ur(r._id, "date", e.target.value));
+
+    const modeEl = select(PMODES, r.paymentMode);
+    modeEl.addEventListener("change", e => ur(r._id, "paymentMode", e.target.value));
+
+    const dateGrp = fieldGroup("Date", dateEl);
+    dateGrp.style.flex = "0 0 130px";
+    card.appendChild(fieldRow(dateGrp, fieldGroup("Payment Mode", modeEl)));
+
+    // Row 2: Description textarea
+    const descEl = document.createElement("textarea");
+    descEl.className = "field-textarea";
+    descEl.placeholder = "What was this for?";
+    descEl.value = r.description || "";
+    descEl.addEventListener("input", e => ur(r._id, "description", e.target.value));
+    descEl.addEventListener("change", e => ur(r._id, "description", e.target.value));
+    const descRow = document.createElement("div");
+    descRow.className = "field-row single";
+    descRow.appendChild(fieldGroup("Description", descEl));
+    card.appendChild(descRow);
+
+    // Row 3: Income + Expense
+    const incEl = input(r.income, "inc", "decimal");
+    incEl.placeholder = "0";
+    incEl.addEventListener("change", e => ur(r._id, "income", e.target.value));
+    const expEl = input(r.expense, "exp", "decimal");
+    expEl.placeholder = "0";
+    expEl.addEventListener("change", e => ur(r._id, "expense", e.target.value));
+    card.appendChild(fieldRow(fieldGroup("Income ₹", incEl), fieldGroup("Expense ₹", expEl)));
+
+    // Row 4: Type of Expense
+    const typeEl = select(ETYPES, r.typeOfExpense);
+    typeEl.addEventListener("change", e => ur(r._id, "typeOfExpense", e.target.value));
+    const typeRow = document.createElement("div");
+    typeRow.className = "field-row single";
+    typeRow.appendChild(fieldGroup("Type of Expense / Income", typeEl));
+    card.appendChild(typeRow);
+
+    // Row 5: Notes
+    const notesEl = input(r.notes);
+    notesEl.placeholder = "Any extra remarks";
+    notesEl.addEventListener("change", e => ur(r._id, "notes", e.target.value));
+    const notesRow = document.createElement("div");
+    notesRow.className = "field-row single";
+    notesRow.appendChild(fieldGroup("Notes (optional)", notesEl));
+    card.appendChild(notesRow);
+
+    // Add row below button
+    const addBtn = document.createElement("button");
+    addBtn.className = "add-below-btn";
+    addBtn.textContent = "＋ Add row below this";
+    addBtn.addEventListener("click", () => addRowAfter(r._id));
+    card.appendChild(addBtn);
+
+    container.appendChild(card);
+  });
+  calcSummary();
+  updateSyncBar();
+}
+
+function statusIcon(id) {
+  const s = rowState[id] || "pending";
+  if (s === "saved")   return "✅";
+  if (s === "saving")  return `<span class="saving-dot"></span>`;
+  if (s === "error")   return "⚠️";
+  return "🕐"; // pending
+}
+
+function setRowState(id, state) {
+  rowState[id] = state;
+  const el = document.getElementById("rs-" + id);
+  if (el) el.innerHTML = statusIcon(id);
+  const card = document.getElementById("card-" + id);
+  if (card) card.className = "row-card state-" + state;
+  updateSyncBar();
+}
+
+function updateSyncBar() {
+  const states = rows.map(r => rowState[r._id] || "pending");
+  const allSaved  = states.every(s => s === "saved");
+  const anySaving = states.some(s => s === "saving");
+  const anyError  = states.some(s => s === "error");
+  const anyPending= states.some(s => s === "pending");
+
+  const icon = document.getElementById("syncIcon");
+  const msg  = document.getElementById("syncMsg");
+  if (!icon || !msg) return;
+
+  if (allSaved) {
+    icon.textContent = "✅"; msg.textContent = "All rows saved to Sheet";
+    msg.style.color = "var(--accent)";
+  } else if (anySaving) {
+    icon.innerHTML = `<span class="saving-dot"></span>`; msg.textContent = "Saving…";
+    msg.style.color = "var(--primary)";
+  } else if (anyError) {
+    icon.textContent = "⚠️"; msg.textContent = "Some rows failed — tap ⚠️ rows to retry";
+    msg.style.color = "var(--danger)";
+  } else if (anyPending) {
+    icon.textContent = "🕐"; msg.textContent = "Unsaved changes…";
+    msg.style.color = "var(--text-soft)";
+  }
+}
+
+function x(v){ return String(v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
+
+function ur(id, k, v) {
+  const r = rows.find(r => r._id === id);
+  if (!r) return;
+  r[k] = v;
+  calcSummary();
+  saveSession(); // persist locally immediately
+  // Debounce: wait 800ms after last change before saving to Sheets
+  setRowState(id, "pending");
+  if (saveTimers[id]) clearTimeout(saveTimers[id]);
+  saveTimers[id] = setTimeout(() => saveRow(id), 800);
+}
+
+async function saveRow(id) {
+  if (!isTokenValid()) {
+    setRowState(id, "error");
+    showToast("Session expired — please sign in again in ⚙️ Settings", "error");
+    return;
+  }
+  const r = rows.find(r => r._id === id);
+  if (!r) return;
+
+  setRowState(id, "saving");
+
+  const values = [[r.date, r.description, r.income, r.expense, r.paymentMode, r.typeOfExpense, r.notes]];
+  const range  = encodeURIComponent(cfg.sheetName + "!A1");
+  const url    = `https://sheets.googleapis.com/v4/spreadsheets/${cfg.sheetId}/values/${range}:append?valueInputOption=USER_ENTERED`;
+
+  try {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + accessToken },
+      body: JSON.stringify({ values })
+    });
+    let data;
+    try { data = await resp.json(); } catch(e) { throw new Error("HTTP " + resp.status); }
+    if (!resp.ok) throw new Error(data.error?.message || "Sheets error " + resp.status);
+    setRowState(id, "saved");
+  } catch(err) {
+    setRowState(id, "error");
+    showToast("Row save failed: " + err.message, "error", 5000);
+  }
+}
+
+function delRow(id) {
+  rows = rows.filter(r => r._id !== id);
+  delete rowState[id];
+  delete saveTimers[id];
+  saveSession();
+  renderTable();
+}
+
+function addRow() {
+  const r = {_id:uid(), date:"", description:"", income:"", expense:"", paymentMode:"Cash", typeOfExpense:"", notes:""};
+  rows.push(r);
+  rowState[r._id] = "pending";
+  renderTable();
+  setTimeout(() => {
+    const card = document.getElementById("card-" + r._id);
+    if (card) card.scrollIntoView({behavior:"smooth", block:"start"});
+  }, 60);
+}
+
+function addRowAfter(afterId) {
+  const idx = rows.findIndex(r => r._id === afterId);
+  const r = {_id:uid(), date: rows[idx]?.date||"", description:"", income:"", expense:"", paymentMode:"Cash", typeOfExpense:"", notes:""};
+  rows.splice(idx + 1, 0, r);
+  rowState[r._id] = "pending";
+  saveSession();
+  renderTable();
+  setTimeout(() => {
+    const card = document.getElementById("card-" + r._id);
+    if (card) card.scrollIntoView({behavior:"smooth", block:"start"});
+  }, 60);
+}
+
+function calcSummary() {
+  const inc = rows.reduce((s,r) => s + (parseFloat(r.income)||0), 0);
+  const exp = rows.reduce((s,r) => s + (parseFloat(r.expense)||0), 0);
+  const net = inc - exp;
+  document.getElementById("totalInc").textContent = "₹" + fmt(inc);
+  document.getElementById("totalExp").textContent = "₹" + fmt(exp);
+  const el = document.getElementById("netRow");
+  el.textContent = "Net: " + (net>=0?"+":"") + "₹" + fmt(Math.abs(net));
+  el.style.color = net>=0 ? "var(--accent)" : "var(--danger)";
+}
+function fmt(n){ return n.toLocaleString("en-IN"); }
+
+// Auto-save ALL rows when table first renders after extraction
+function autoSaveAllRows() {
+  rows.forEach((r, i) => {
+    rowState[r._id] = "pending";
+    // Stagger saves 300ms apart to avoid rate limiting
+    saveTimers[r._id] = setTimeout(() => saveRow(r._id), 300 + i * 300);
+  });
+  updateSyncBar();
+}
+
+// ═══════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════
+function openSettings() {
+  document.getElementById("cfgSheetId").value   = cfg.sheetId   || "";
+  document.getElementById("cfgSheetName").value = cfg.sheetName || "Sheet1";
+  const el = document.getElementById("authStatus");
+  if (isTokenValid()) {
+    el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--accent-bg);border-radius:10px;padding:10px 12px">
+      <span style="font-size:12px;color:var(--accent);font-weight:600">✓ Signed in with Google</span>
+      <button class="btn btn-ghost btn-sm" onclick="signOut()" style="font-size:11px">Sign Out</button>
+    </div>`;
+  } else {
+    el.innerHTML = `<div style="font-size:12px;color:var(--text-soft);line-height:1.6">Not signed in yet. Save settings first, then use the Sign in button.</div>`;
+  }
+  show("settingsOverlay");
+}
+
+function closeSettings() { hide("settingsOverlay"); }
+
+function saveSettings() {
+  const id   = document.getElementById("cfgSheetId").value.trim();
+  const name = document.getElementById("cfgSheetName").value.trim() || "Sheet1";
+  if (!id) { showToast("Please enter a Sheet ID", "error"); return; }
+  const apiKey = document.getElementById('cfgApiKey').value.trim();
+  if (!apiKey) { showToast('Please enter your Anthropic API key', 'error'); return; }
+  cfg = { sheetId: id, sheetName: name, anthropicKey: apiKey };
+  localStorage.setItem("cb_cfg", JSON.stringify(cfg));
+  closeSettings();
+  showToast("Settings saved ✓", "success");
+  render();
+}
+
+// ═══════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════
+function show(id){ const e=document.getElementById(id); if(e) e.style.display=""; }
+function hide(id){ const e=document.getElementById(id); if(e) e.style.display="none"; }
+function uid(){ return Math.random().toString(36).slice(2); }
+
+function showToast(msg, type="info", dur=3500){
+  const t = document.getElementById("toast");
+  t.className = "toast toast-"+type;
+  t.innerHTML = (type==="success"?"✓ ":type==="error"?"⚠ ":"ℹ ")+msg;
+  t.style.display = "flex";
+  if(toastTmr) clearTimeout(toastTmr);
+  toastTmr = setTimeout(()=>{ t.style.display="none"; }, dur);
+}
+
+function setLoading(btn, msg){
+  btn.disabled = true;
+  btn.innerHTML = `<div class="spinner"></div> ${msg}`;
+}
+function clearLoading(btn, label){
+  btn.disabled = false;
+  btn.innerHTML = label;
+}
+
+// Save session whenever user leaves/switches app
+// Android Chrome fires visibilitychange + pagehide when switching apps
+document.addEventListener("visibilitychange", () => {
+  saveSession(); // save on both hide AND show (covers all cases)
+});
+window.addEventListener("pagehide",  saveSession);
+window.addEventListener("blur",      saveSession);
+window.addEventListener("focus", () => {
+  // When app comes back into focus on Android, check if we need to re-render
+  const saved = JSON.parse(localStorage.getItem("cb_session") || "{}");
+  if (saved.rows && saved.rows.length > 0 && step === 0) {
+    // Rows exist but we're on wrong screen — restore
+    rows = saved.rows; step = 1;
+    rowState = saved.rowState || {};
+    render();
+    showToast("Resumed " + rows.length + " rows", "info", 3000);
+  }
+});
+</script>
+</body>
+</html>
