@@ -905,7 +905,7 @@ async function extractEntries() {
     "- income / expense: numeric string, no ₹ or commas. Empty string if absent.",
     "- paymentMode: Cash | UPI | Cheque | Bank Transfer | ?",
     "- typeOfExpense: Pick the best match from: Labour, Salary, Transport, Core Drying, GST Tax, Loan Repayment, Factory Expenses, Personal Expenses, Rental Income, Sales - Glue, Sales - Plywood, Sales - Veneer, Sales Tax, Savings, Savings Matured, Raw Material Supplier, Glue Supplier, Core Supplier, Misc. Rules: wages/workers/OT/driver=Labour; owner/personal=Personal Expenses; KEB/electricity=Factory Expenses; glue purchase=Glue Supplier; core purchase=Core Supplier; raw boards=Raw Material Supplier; van/vehicle=Transport; salary advance=Salary; GST=GST Tax; loan=Loan Repayment; plywood sold=Sales - Plywood; veneer sold=Sales - Veneer; glue sold=Sales - Glue; rent=Rental Income; savings deposit=Savings; savings matured=Savings Matured; else=Misc. Empty string only for unclassified income.",
-    "- date: as written on the page. Empty string if not on that row.",
+    "- date: Cash books write the date only on the FIRST row of that day, then leave it blank for all subsequent rows of the same day. You MUST carry forward the last seen date to every row that has no date written. Never leave date empty, never guess a wrong date. Example: if row 1 has 02-04-26 and rows 2-8 have no date, all of rows 2-8 must also get 02-04-26.",
     "- notes: any extra remarks. Empty string if none.",
     "",
     "Reply ONLY with the JSON array. Start with [ end with ]. No markdown, no explanation."
